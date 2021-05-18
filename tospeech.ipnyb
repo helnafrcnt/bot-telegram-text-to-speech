@@ -1,0 +1,28 @@
+import telebot
+import requests
+
+bot = telebot.TeleBot("1227263764:AAFBjGITuyGs9aMMBt-ST_hm9p6wIwsOSeM")
+
+@bot.message_handler(commands=['start'])
+def action_start(message):
+    nama = message.from_user.first_name
+    bot.reply_to(message,'Selamat Datang di ChatBot Text to Speech. \n Halo {} \n'.format(nama))
+
+ 
+@bot.message_handler(commands=['tospeech'])
+def tospeech(message):
+    text = message.text
+    id = message.chat.id
+    text = text[5:]
+    somestr = '{"text":'
+    b = somestr+'"'+text+'"'+'}'
+    r = requests.post(url = 'https://api.eu-gb.text-to-speech.watson.cloud.ibm.com/instances/39b34b70-473f-4650-939b-68d4fc628df9/v1/synthesize', auth = ('apikey','gUbP2jCxdqpbb1lw_iBIiaISMbfNEKhKNWevWva_gsHK'), headers = {"Content-Type" : "application/json", "Accept" : "audio/ogg"}, data = b, stream = True)
+    
+    with open('voice.ogg', 'wb') as fd:
+        for chunk in r.iter_content(chunk_size=128):
+            fd.write(chunk)
+    c = open('voice.ogg', 'rb')
+    bot.send_voice(chat_id = id, voice = c, reply_to_message_id= message.message_id)
+
+print("helna")
+bot.polling()
